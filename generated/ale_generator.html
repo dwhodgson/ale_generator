@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>ale_generator &#8212; ALE Generator 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-ale_generator">
+<span id="ale-generator"></span><h1>ale_generator<a class="headerlink" href="#module-ale_generator" title="Permalink to this headline">¶</a></h1>
+<p>A module implementing off-lattice conformal Laplacian random growth models.</p>
+<p>This module implements three different kinds of off-lattice Laplacian random growth models:
+Aggregated Loewner Evolution, parameterised by alpha and eta.
+Hastings-Levitov, parameterised by alpha; equivalent to ALE with eta=0.
+The special case Hastings-Levitov-0; equivalent to ALE with alpha=eta=0.</p>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>For mathematical justification and explanation of the models implemented here see Sola, Turner, and Viklund <a class="reference internal" href="#rc22a0730aa13-1" id="id1">[1]</a> for ALE
+and Hastings and Levitov <a class="reference internal" href="#rc22a0730aa13-2" id="id2">[2]</a> for HL.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<dl class="citation">
+<dt class="label" id="rc22a0730aa13-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>A. Sola, A. Turner, F. Viklund, “One-Dimensional Scaling Limits in a Planar Laplacian Random Growth Model”,
+Communications in Mathematical Physics, vol. 371, pp. 285-329, 2019.</p>
+</dd>
+<dt class="label" id="rc22a0730aa13-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p>MB. Hastings, LS. Levitov, “Laplacian Growth as One-Dimensional Turbulence”, Physica D, vol. 116, pp. 244-252,
+1998.</p>
+</dd>
+</dl>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_map</span></code>(caps, z, thetas)</p></td>
+<td><p>Applies the full map of a Laplacian growth model.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ALE</span></code>(alpha, eta, sigma, c, n[, points, reg, bins])</p></td>
+<td><p>TODO DOCSTRING</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ale_generator.Laplacian_Model.html#ale_generator.Laplacian_Model" title="ale_generator.Laplacian_Model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Laplacian_Model</span></code></a>(sigma, c, n[, points, reg])</p></td>
+<td><p>Super-Class for all implemented Laplacian growth models containing those parameters and methods shared by all models.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ALE Generator</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/ale_generator.html">ale_generator</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Daniel Hodgson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/generated/ale_generator.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
