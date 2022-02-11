@@ -2,7 +2,7 @@ API
 ===
 
 .. autosummary::
-	:toctree: _autosummary
+	:toctree: generated
 	:recursive:
 	
 	ale_generator
