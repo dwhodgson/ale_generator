@@ -24,7 +24,7 @@ import random
 import sys
 import matplotlib.pyplot as plt
 from numpy import linspace, sin, cos
-from math import exp, pi, log10
+from math import exp, pi, atan, sqrt
 from typing import List
 
 
@@ -157,7 +157,51 @@ def full_map(caps: List[float], z: complex or float, thetas: List[float]) -> com
     return z
 
 
-class Laplacian_Model():
+def __length(c: float) -> float:
+    """Computes the length of a slit with logarithmic capacity `c`.
+
+    Parameters
+    -----------
+    c : float
+        Logarithmic capacity of the slit.
+
+    Returns
+    -------
+    float
+        The length of a slit of logarithmic capacity `c`.
+
+    """
+    # Type checking
+    if type(c) != float:
+        raise TypeError('Unexpected type for parameter `c`: ' + str(type(c)) + ', `c` must be of type float')
+    return 2 * exp(c) * (1 + sqrt(1 - exp(-c))) - 2
+
+
+def beta(c: float) -> float:
+    """Computes the half-length of the sub-interval of [-pi,pi] for which points on the circle with argument within the
+    sub-interval get mapped to the slit.
+
+    Points on the circle that are mapped to points on the slit under a slit map compose a closed arc of the circle
+    corresponding to the arguments in an interval [theta-b_c, theta+b_c] where b_c is the output of this function when
+    `c` is the logarithmic capacity of the slit.
+
+    Parameters
+    -----------
+    c : float
+        The logarithmic capacity of the slit
+
+    Returns
+    -------
+    float
+        The half-length of the sub-interval.
+    """
+    # Type checking
+    if type(c) != float:
+        raise TypeError('Unexpected type for parameter `c`: ' + str(type(c)) + ', `c` must be of type float')
+    return 2 * atan(__length(c) / (2 * sqrt(__length(c) + 1)))
+
+
+class LaplacianModel:
     """Super-Class for all implemented Laplacian growth models containing those parameters and methods shared by all
     models.
 
@@ -178,6 +222,7 @@ class Laplacian_Model():
         The number of points to be used for plotting clusters
     reg : float, default: 1.000001
         Regularisation of the circle for plotting clusters - should be strictly greater than 1.
+
     """
 
     def __init__(self, sigma: float, c: float, n: int, points: int = 10 ** 6, reg: float = 1.000001) -> None:
@@ -203,9 +248,9 @@ class Laplacian_Model():
         """
         t = linspace(-pi, pi, self.points)
         x, y = sin(t) * self.reg, cos(t) * self.reg
-        z = [complex(x_i,y_i) for x_i,y_i in zip(x,y)]
-        z = full_map(self.caps,z,self.thetas)
-        x,y = [z_i.real for z_i in z], [z_i.imag for z_i in z]
+        z = [complex(x_i, y_i) for x_i, y_i in zip(x, y)]
+        z = full_map(self.caps, z, self.thetas)
+        x, y = [z_i.real for z_i in z], [z_i.imag for z_i in z]
         plot_file = self.name + '.png'
         plt.cla()
         plt.plot(x, y, ',')
@@ -215,14 +260,54 @@ class Laplacian_Model():
         ax.axes.yaxis.set_visible(False)
         plt.savefig(plot_file)
 
+    def gaps(self) -> List[int]:
+        """Computes the time series of generation gaps for the cluster given by generated angles and capacities
 
-class ALE(Laplacian_Model):
+        Computes the generation gaps, that is the difference between the generation of each particle and the generation
+        of the particle it is attached to, by recursively removing relevant parts of a partition of the circle.
+
+        Returns
+        -------
+        gaps : List[int]
+            List of generation gaps.
+
+        Raises
+        ------
+        AttributeError
+            If angles or capacities have not been generated for this model.
+
+        """
+        gaps = []
+        # Compute the generation of the attaching particle for each angle
+        for i in range(len(self.thetas)):
+            theta = self.thetas[i]
+            n = i
+            generation = None
+            while generation is None:
+                if n == 0:
+                    generation = 0
+                else:
+                    previous = self.thetas[n - 1]
+                    b = beta(self.caps[n - 1])
+                    if previous + b >= theta >= previous - b:
+                        generation = n
+                    # Check in case of wrap-around
+                    elif previous + b > pi and theta <= previous + b - pi:
+                        generation = n
+                    elif previous - b < -pi and theta >= previous - b + pi:
+                        generation = n
+                n -= 1
+            gaps.append((i+1)-generation)
+        return gaps
+
+
+class ALE(LaplacianModel):
     """
     TODO DOCSTRING
     """
 
     def __init__(self, alpha: float, eta: float, sigma: float, c: float, n: int, points: int = None, reg: float =
-                 1.000001, bins: int = 10 ** 5) -> None:
+    1.000001, bins: int = 10 ** 5) -> None:
         super().__init__(sigma, c, n, points, reg)
         self.alpha = alpha
         self.eta = eta
