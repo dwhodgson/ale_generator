@@ -44,10 +44,10 @@ that is, the backwards composition of len(thetas) building blocks.</p>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>caps</strong><span class="classifier">List[float]</span></dt><dd><p>A list of the logarithmic capacity of each slit.</p>
 </dd>
-<dt><strong>z</strong><span class="classifier">complex or float</span></dt><dd><p>The point at which to compute the image of the map. If float, computes the image at <a href="#id1"><span class="problematic" id="id2">`</span></a>z`+0*i.</p>
+<dt><strong>z</strong><span class="classifier">complex</span></dt><dd><p>The point at which to compute the image of the map.</p>
 </dd>
-<dt><strong>thetas</strong><span class="classifier">List[float]</span></dt><dd><p>A list of the angles at which to attach each slit. Must be of the same length as <cite>caps</cite> and each element must
-be in the range [-pi,pi].</p>
+<dt><strong>thetas</strong><span class="classifier">List[float]</span></dt><dd><p>A list of the angles at which to attach each slit. Should be of the same length as <cite>caps</cite> and each element
+should be in the range [-pi,pi].</p>
 </dd>
 </dl>
 </dd>

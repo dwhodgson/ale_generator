@@ -16,6 +16,7 @@
    
       full_map
       gaps
+      map_diff
    
    
 
@@ -28,6 +29,8 @@
    	:template: class.rst
    
       ALE
+      HL
+      HL0
       LaplacianModel
    
    

@@ -30,7 +30,7 @@ from csv import writer
 from pickle import dump, HIGHEST_PROTOCOL
 
 
-def __slit_map(c: float, z: complex or float) -> complex:
+def __slit_map(c: float, z: complex) -> complex:
     """Draws a slit with capacity `c` at the point 1.
 
     Computes the image of a point in the complex plane `z` under the map which takes the unit disc to the unit disc
@@ -40,8 +40,8 @@ def __slit_map(c: float, z: complex or float) -> complex:
     -----------
     c : float
         The logarithmic capacity of the slit.
-    z : complex or float
-        The point at which to compute the image of the slit map. If float computes the image at `z`+0*i.
+    z : complex  float
+        The point at which to compute the image of the slit map.
 
     Returns
     -------
@@ -49,20 +49,11 @@ def __slit_map(c: float, z: complex or float) -> complex:
         The image of the point `z` under the slit map.
 
     """
-    # Type checking
-    if type(z) != complex:
-        if type(z) == float:
-            z = complex(z, 0)
-        else:
-            raise TypeError('Unexpected type for parameter `z`: ' + str(type(z)) + ', `z` must be of type complex '
-                                                                                   'or float')
-    if type(c) != float:
-        raise TypeError('Unexpected type for parameter `c`:' + str(type(c)) + ', `c` must be of type float')
     return (exp(c) / (2 * z)) * (z ** 2 + 2 * z * (1 - exp(-c)) + 1 + (z + 1) ** 2 * cmath.sqrt(
         (z ** 2 + 2 * z * (1 - 2 * exp(-c)) + 1) / ((z + 1) ** 2)))
 
 
-def __building_block(c: float, z: complex or float, theta: float) -> complex:
+def __building_block(c: float, z: complex, theta: float) -> complex:
     """Draws a slit of capacity `c` attached at the angle `theta`
 
     Computes the image of a point in the complex plane `z` under the map which takes the unit disc to the unit disc
@@ -73,35 +64,20 @@ def __building_block(c: float, z: complex or float, theta: float) -> complex:
     -----------
     c : float
         The logarithmic capacity of the slit.
-    z : complex or float
-        The point at which to compute the image of the map. If float computes the image at `z`+0*i.
+    z : complex
+        The point at which to compute the image of the map.
     theta : float
-        The angle at which to attach the slit to the unit disc - must be in the range [-pi,pi].
+        The angle at which to attach the slit to the unit disc - should be in the range [-pi,pi].
 
     Returns
     --------
     complex
         The image of the point `z` under the rotated slit map.
     """
-    # Type checking
-    if type(z) != complex:
-        if type(z) == float:
-            z = complex(z, 0)
-        else:
-            raise TypeError('Unexpected type for parameter `z`: ' + str(type(z)) + ', `z` must be of type complex '
-                                                                                   'or float')
-    if type(c) != float:
-        raise TypeError('Unexpected type for parameter `c`:' + str(type(c)) + ', `c` must be of type float')
-    if type(theta) != float:
-        raise TypeError('Unexpected type for parameter `theta`:' + str(type(theta)) + ', `theta` must be of type '
-                                                                                      'float')
-    # Check theta is in the correct range
-    if theta < -pi or theta > pi:
-        raise ValueError('`theta` must be in the range [-pi,pi]')
     return cmath.exp(theta * 1j) * __slit_map(c, cmath.exp(-theta * 1j) * z)
 
 
-def full_map(caps: List[float], z: complex or float, thetas: List[float]) -> complex:
+def full_map(caps: List[float], z: complex, thetas: List[float]) -> complex:
     """Applies the full map of a Laplacian growth model.
 
     Computes the image of a point in the complex plane `z` under the full map of a Laplacian random growth model -
@@ -111,52 +87,77 @@ def full_map(caps: List[float], z: complex or float, thetas: List[float]) -> com
     -----------
     caps : List[float]
        A list of the logarithmic capacity of each slit.
-    z : complex or float
-       The point at which to compute the image of the map. If float, computes the image at `z`+0*i.
+    z : complex
+       The point at which to compute the image of the map.
     thetas : List[float]
-        A list of the angles at which to attach each slit. Must be of the same length as `caps` and each element must
-        be in the range [-pi,pi].
+        A list of the angles at which to attach each slit. Should be of the same length as `caps` and each element
+        should be in the range [-pi,pi].
 
     Returns
     -------
     z : complex
         The image of the parameter `z` under the full map.
     """
-    # Type checking
-    if type(z) != complex:
-        if type(z) == float:
-            z = complex(z, 0)
-        else:
-            raise TypeError('Unexpected type for parameter `z`: ' + str(type(z)) + ', `z` must be of type complex '
-                                                                                   'or float')
-    if type(caps) != list:
-        raise TypeError('Unexpected type for parameter `caps`: ' + str(type(caps)) + ', `caps` must be a list of '
-                                                                                     'floats')
-    for cap in caps:
-        if type(cap) != float:
-            raise TypeError(
-                'Unexpected type for an element of parameter `caps`: ' + str(type(cap)) + ', `caps` must be a list of '
-                                                                                          'floats')
-    if type(thetas) != list:
-        raise TypeError('Unexpected type for parameter `thetas`: ' + str(type(thetas)) + ', `thetas` must be a list of '
-                                                                                         'floats')
-    for theta in thetas:
-        if type(theta) != float:
-            raise TypeError('Unexpected type for an element of parameter `thetas`: ' + str(type(theta)) + ', `thetas` '
-                                                                                                          'must be a '
-                                                                                                          'list of '
-                                                                                                          'floats')
-    # Check thetas are in the correct range
-    for theta in thetas:
-        if theta < -pi or theta > pi:
-            raise ValueError('Each angle should be in the range [-pi,pi]')
-    # Check length of lists
-    if len(caps) != len(thetas):
-        raise ValueError('Lists `caps` and `thetas` must be of the same length')
     # Backwards composition of len(thetas) building blocks.
     for i in range(len(thetas) - 1, -1, -1):
         z = __building_block(caps[i], z, thetas[i])
     return z
+
+
+def __slit_diff(c: float, z: complex):
+    """Computes the derivative of the slit map with capacity `c` at the point `z`.
+
+    Calculates the derivative of the slit map with logarithmic capacity `c` at a point in the complex plane `z` via the
+    product rule. This derivative is used iteratively to compute the derivative of a full map.
+
+    Parameters
+    ----------
+    c : float
+        The logarithmic capacity of the slit.
+    z : complex
+        The point in the complex plane at which to compute the derivative.
+
+    Returns
+    -------
+    float
+        The derivative of the slit map with capacity `c` at the point `z`.
+
+    """
+    sq_rt = cmath.sqrt((z ** 2 + 2 * z * (1 - 2 * exp(-c)) + 1) / ((z + 1) ** 2))
+    prod1 = -(exp(c) / (2 * z ** 2)) * (z ** 2 + 2 * z * (1 - exp(-c)) + 1 + (z + 1) ** 2 * sq_rt)
+    prod2 = (exp(c) / (2 * z)) * (2 * z + 2 * (1 - exp(-c)) + 2 * (z + 1) * sq_rt + (z + 1) ** 2 * 0.5 * (1 / sq_rt) * (
+            ((2 * z + 2 * (1 - 2 * exp(-c))) * (z + 1) ** 2 - 2 * (z + 1) * (z ** 2 + 2 * z * (1 - 2 * exp(-c)) + 1)
+             ) / ((z + 1) ** 4)))
+    return prod1 + prod2
+
+
+def map_diff(z: complex, caps: List[float], thetas: List[float]) -> float:
+    """Computes the derivative of the full map characterised by `caps` and `thetas` at the point `z`.
+
+    Calculates the derivative of the full map characterised by `caps` and `thetas` at the point `z` using the chain
+    rule.
+
+    Parameters
+    ----------
+    z : complex
+        The point at which to compute the derivative.
+    caps : List[float]
+        The logarithmic capacities characterising the map.
+    thetas : List[float]
+        The angles characterising the map. Should be of the same length as `caps` and each element should be in the
+        range [-pi,pi].
+
+    Returns
+    --------
+    diff : float
+        The value of the derivative of the map characterised by `caps` and `thetas` at the point e^(i*`theta` +
+        `sigma`).
+    """
+    diff = 1
+    for i in range(len(caps) - 1, -1, -1):
+        diff = diff * __slit_diff(caps[i], cmath.exp(-thetas[i] * 1j) * z)
+        z = __building_block(caps[i], z, thetas[i])
+    return diff
 
 
 def __length(c: float) -> float:
@@ -173,9 +174,6 @@ def __length(c: float) -> float:
         The length of a slit of logarithmic capacity `c`.
 
     """
-    # Type checking
-    if type(c) != float:
-        raise TypeError('Unexpected type for parameter `c`: ' + str(type(c)) + ', `c` must be of type float')
     return 2 * exp(c) * (1 + sqrt(1 - exp(-c))) - 2
 
 
@@ -197,9 +195,6 @@ def __beta(c: float) -> float:
     float
         The half-length of the sub-interval.
     """
-    # Type checking
-    if type(c) != float:
-        raise TypeError('Unexpected type for parameter `c`: ' + str(type(c)) + ', `c` must be of type float')
     return 2 * atan(__length(c) / (2 * sqrt(__length(c) + 1)))
 
 
@@ -218,11 +213,12 @@ def __generation(m: int, theta: float, caps: List[float], angles: List[float]) -
     m : int
         The generation up to which the cluster is built before the addition of a slit at `theta`.
     theta : float
-        The angle at which the new slit would be attached.
+        The angle at which the new slit would be attached. Should be in the range [-pi,pi]
     caps : List[float]
         The logarithmic capacities generating the cluster.
     angles : List[float]
-        The angles generating the cluster. NB: named `angles` to avoid individual elements clashing with `theta`.
+        The angles generating the cluster - should be of the same length as `caps` and each element should be in the
+        range [-pi,pi] NB: named `angles` to avoid individual elements clashing with `theta`.
 
     Returns
     -------
@@ -230,38 +226,6 @@ def __generation(m: int, theta: float, caps: List[float], angles: List[float]) -
         The generation number of the slit a new slit attached at angle `theta` would attach to.
 
     """
-    # Type checking
-    if type(m) != int:
-        raise TypeError('Unexpected type for parameter `m`: ' + str(type(m)) + ', `m` must be of type int')
-    if type(theta) != float:
-        raise TypeError('Unexpected type for parameter `theta`: ' + str(type(theta)) + ', `theta` must be of type '
-                                                                                       'float')
-    if type(caps) != list:
-        raise TypeError('Unexpected type for parameter `caps`: ' + str(type(caps)) + ', `caps` must be a list of '
-                                                                                     'floats')
-    for cap in caps:
-        if type(cap) != float:
-            raise TypeError(
-                'Unexpected type for an element of parameter `caps`: ' + str(type(cap)) + ', `caps` must be a list of '
-                                                                                          'floats')
-    if type(angles) != list:
-        raise TypeError('Unexpected type for parameter `angles`: ' + str(type(angles)) + ', `angles` must be a list of '
-                                                                                         'floats')
-    for angle in angles:
-        if type(angle) != float:
-            raise TypeError('Unexpected type for an element of parameter `angles`: ' + str(type(angle)) + ', `angles` '
-                                                                                                          'must be a '
-                                                                                                          'list of '
-                                                                                                          'floats')
-    # Check angles are in the correct range
-    for angle in angles:
-        if angle < -pi or angle > pi:
-            raise ValueError('Each angle should be in the range [-pi,pi]')
-    if theta < -pi or theta > pi:
-        raise ValueError('`theta` should be in the range [-pi,pi]')
-    # Check length of lists
-    if len(caps) != len(angles):
-        raise ValueError('Lists `caps` and `angles` must be of the same length')
     for n in range(m, -1, -1):
         if n == 0:
             return 0
@@ -278,7 +242,7 @@ def __generation(m: int, theta: float, caps: List[float], angles: List[float]) -
         theta = cmath.phase(__building_block(c, cmath.exp(theta * 1j), angle))
 
 
-def gaps(thetas: List[float], caps: List[float]) -> List[int]:
+def gaps(caps: List[float], thetas: List[float]) -> List[int]:
     """Computes the generation gaps for a cluster generated by `thetas` and `caps`.
 
     The generation gap of a slit is the difference between its generation number and the generation number of slit it is
@@ -287,10 +251,11 @@ def gaps(thetas: List[float], caps: List[float]) -> List[int]:
 
     Parameters
     ----------
-    thetas : List[float]
-        The angles generating the cluster.
     caps : List[float]
-        The logarithmic capacities generating the cluster. Should be of the same length as `thetas`.
+        The logarithmic capacities generating the cluster.
+    thetas : List[float]
+        The angles generating the cluster. Should be of the same length as `caps` and each element should be in the
+        range [-pi,pi].
 
     Returns
     -------
@@ -298,31 +263,6 @@ def gaps(thetas: List[float], caps: List[float]) -> List[int]:
         The generation gaps for the cluster generated by `thetas` and `caps`.
 
     """
-    # Type checking
-    if type(caps) != list:
-        raise TypeError('Unexpected type for parameter `caps`: ' + str(type(caps)) + ', `caps` must be a list of '
-                                                                                     'floats')
-    for cap in caps:
-        if type(cap) != float:
-            raise TypeError(
-                'Unexpected type for an element of parameter `caps`: ' + str(type(cap)) + ', `caps` must be a list of '
-                                                                                          'floats')
-    if type(thetas) != list:
-        raise TypeError('Unexpected type for parameter `thetas`: ' + str(type(thetas)) + ', `thetas` must be a list of '
-                                                                                         'floats')
-    for theta in thetas:
-        if type(theta) != float:
-            raise TypeError('Unexpected type for an element of parameter `thetas`: ' + str(type(theta)) + ', `thetas` '
-                                                                                                          'must be a '
-                                                                                                          'list of '
-                                                                                                          'floats')
-    # Check thetas are in the correct range
-    for theta in thetas:
-        if theta < -pi or theta > pi:
-            raise ValueError('Each angle should be in the range [-pi,pi]')
-    # Check length of lists
-    if len(caps) != len(thetas):
-        raise ValueError('Lists `caps` and `thetas` must be of the same length')
     return [(i + 1) - __generation(i, thetas[i], caps, thetas) for i in range(len(thetas))]
 
 
@@ -357,7 +297,7 @@ class LaplacianModel:
         self.points = points
         self.reg = reg
         self.thetas = []
-        self.caps = []
+        self.caps = [c]
         self.gaps = []
         self.name = None  # Overwritten by subclasses
 
@@ -440,11 +380,6 @@ class LaplacianModel:
             If angles or capacities have not been generated for this model.
 
         """
-        # Type checking
-        if type(save) != bool:
-            raise TypeError('Unexpected type for parameter `save`: ' + str(type(save)) + '`save` must be of type bool')
-        if type(plot) != bool:
-            raise TypeError('Unexpected type for parameter `plot`: ' + str(type(plot)) + '`plot` must be fo type bool')
         # Attribute checking
         if self.thetas == [] or self.caps == []:
             raise AttributeError('Angles or capacities (or both) have not been generated for this model')
@@ -484,10 +419,46 @@ class ALE(LaplacianModel):
     TODO DOCSTRING
     """
 
-    def __init__(self, alpha: float, eta: float, sigma: float, c: float, n: int, points: int = None, reg: float =
-    1.000001, bins: int = 10 ** 5) -> None:
+    def __init__(self, alpha: float, eta: float, sigma: float, c: float, n: int, points: int = 10 ** 6,
+                 reg: float = 1.000001, bins: int = 10 ** 5) -> None:
         super().__init__(sigma, c, n, points, reg)
         self.alpha = alpha
         self.eta = eta
         self.bins = bins
         self.name = 'ALE(' + str(alpha) + ',' + str(eta) + ',' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
+
+
+class HL(LaplacianModel):
+    """
+    TODO DOCSTRING
+    """
+
+    def __init__(self, alpha: float, sigma: float, c: float, n: int, points: int = 10 ** 6,
+                 reg: float = 1.000001) \
+            -> None:
+        super().__init__(sigma, c, n, points, reg)
+        self.alpha = alpha
+        self.name = 'HL(' + str(alpha) + ',' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
+        self.thetas = [random.random() * 2 * pi for _ in range(n)]
+
+    def generate_capacities(self) -> None:
+        """Generates the sequence of capacities for this model.
+
+        Generates the sequence of logarithmic capacities using the derivative of the slit map. Each derivative is
+        computed at the point of attachment of the next slit.
+        """
+        for i in range(self.n - 1):
+            self.caps.append(self.c * abs(map_diff(cmath.exp(1j * self.thetas[i + i] + self.sigma), self.caps,
+                                                   self.thetas[:i + 1])) ** (-self.alpha))
+
+
+class HL0(LaplacianModel):
+    """
+    TODO DOCSTRING
+    """
+
+    def __init__(self, sigma: float, c: float, n: int, points: int = 10 ** 6, reg: float = 1.000001) -> None:
+        super().__init__(sigma, c, n, points, reg)
+        self.name = 'HL0(' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
+        self.caps = [c for _ in range(n)]
+        self.thetas = [random.random() * 2 * pi - pi for _ in range(n)]
