@@ -14,8 +14,8 @@
    .. autosummary::
    	:toctree:
    
-      beta
       full_map
+      gaps
    
    
 
