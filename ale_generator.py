@@ -427,6 +427,27 @@ class ALE(LaplacianModel):
         self.bins = bins
         self.name = 'ALE(' + str(alpha) + ',' + str(eta) + ',' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
 
+    def __pdf(self, theta: float) -> float:
+        return abs(map_diff(cmath.exp(self.sigma + theta * 1j), self.caps, self.thetas)) ** -self.eta
+
+    def sample(self) -> float:
+        """Samples an angle from the angle distribution using Simpson's rule.
+
+        Samples an angle from the distribution with pdf proportional to the absolute value of the derivative of the
+        slit map raised to the power of -eta. This is done by discretising the interval [-pi,pi] into the number of
+        bins set by self.bins and selecting a midpoint weighted according to Simpson's rule.
+
+        Returns
+        -------
+        float
+            An angle in the interval [-pi,pi] randomly sampled from the requisite distribution.
+        """
+        bins = linspace(-pi, pi, self.bins)
+        simpsons = [((bins[i+1]-bins[i])/6)*(self.__pdf(bins[i]) + 4 * self.__pdf((bins[i+1]-bins[i])/2) +
+                                             self.__pdf(bins[i+1])) for i in range(len(bins)-1)]
+        bins = [(bins[i+1]-bins[i])/2 for i in range(len(bins)-1)]
+        return random.choices(bins, simpsons, k=1)[0]
+
 
 class HL(LaplacianModel):
     """
