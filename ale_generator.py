@@ -21,7 +21,6 @@ References
 """
 import cmath
 import random
-import sys
 import matplotlib.pyplot as plt
 from numpy import linspace, sin, cos
 from math import exp, pi, atan, sqrt
@@ -297,7 +296,7 @@ class LaplacianModel:
         self.points = points
         self.reg = reg
         self.thetas = []
-        self.caps = [c]
+        self.caps = []
         self.gaps = []
         self.name = None  # Overwritten by subclasses
 
@@ -316,7 +315,7 @@ class LaplacianModel:
 
         """
         # Attribute checking
-        if self.thetas == [] or self.caps == []:
+        if len(self.thetas) == 0 or len(self.caps) == 0:
             raise AttributeError('Angles or capacities (or both) have not been generated for this model')
         t = linspace(-pi, pi, self.points)
         x, y = sin(t) * self.reg, cos(t) * self.reg
@@ -331,15 +330,63 @@ class LaplacianModel:
         ax.axes.yaxis.set_visible(False)
         plt.savefig(self.name + '.png')
 
+    def plot_colour(self) -> None:
+        """Plots an image of the cluster given by generated angles and capacities, with slit generation marked by
+        colour.
+
+        Plots the cluster given by previously generated angles and capacities by plotting the image of self.points
+        equally spaced points around a circle using pyplot with the slits' generations marked by colour - earlier
+        slits are plotted in red with later slits moving through green to blue. The image is saved as 'Name(alpha,
+        eta,sigma,c,n)-COLOUR.png' where Name is one of ALE, HL, or HL0 appropriately. Parameters are omitted where
+        not relevant to the model, e.g. a Hastings-Levtiov-0 cluster would be saved as 'HL0(sigma,c,n)-COLOUR.png'.
+
+        Raises
+        ------
+        AttributeError
+            If angles or capacities have not been generated for this model.
+
+        """
+        # Attribute checking
+        if len(self.caps) == 0 or len(self.thetas) == 0:
+            raise AttributeError('Angles or capacities (or both) have not been generated for this model')
+        t = linspace(-pi, pi, self.points)
+        x, y = sin(t) * self.reg, cos(t) * self.reg
+        z = [complex(x_i, y_i) for x_i, y_i in zip(x, y)]
+        new_z = [full_map(self.caps, z_i, self.thetas) for z_i in z]
+        x, y = [z_i.real for z_i in new_z], [z_i.imag for z_i in new_z]
+        colour = (0, 0, 1)
+        switch = len(self.thetas) // 511
+        plt.cla()
+        plt.plot(x, y, ',', color=colour)
+        for i in range(len(self.thetas) - 1):
+            new_z = [full_map(self.caps[:-(i + 1)], z_i, self.thetas[:-(i + 1)]) for z_i in z]
+            x, y = [z_i.real for z_i in new_z], [z_i.imag for z_i in new_z]
+            if (i + 1) % switch == 0:
+                if colour[2] != 0:
+                    colour = (0, colour[1] + 1 / 255, colour[2] - 1 / 255)
+                else:
+                    colour = (colour[0] + 1 / 255, colour[1] - 1 / 255, 0)
+            plt.plot(x, y, ',', color=colour)
+        ax = plt.gca()
+        ax.set_aspect('equal')
+        ax.axes.xaxis.set_visible(False)
+        ax.axes.yaxis.set_visible(False)
+        plt.savefig(self.name + '-COLOUR.png')
+
     def plot_gaps(self) -> None:
         """Plots the generation gaps as a histogram.
+
+        Plots the generation gaps produced by compute_gaps() as a pyplot histogram. The resulting image is saved as
+        'Name(alpha,eta,sigma,c,n)-GAPS.png' where Name is one of ALE, HL, or HL0 appropriately. Parameters are
+        omitted where not relevant to the model, e.g. a Hastings-Levtiov-0 cluster would be saved as 'HL0(sigma,c,
+        n)-GAPS.png.'
 
         Raises
         ------
         AttributeError
             If generation gaps have not been computed for this model"""
         # Attribute checking
-        if self.gaps == []:
+        if len(self.gaps) == 0:
             raise AttributeError('Generation gaps have not been computed for this model')
         plt.cla()
         plt.hist(self.gaps)
@@ -348,6 +395,10 @@ class LaplacianModel:
     def save_gaps(self) -> None:
         """Saves the generation gaps as a csv file.
 
+        Saves the generation gaps produced by compute_gaps() as a csv file. The list is saved as 'Name(alpha,eta,
+        sigma,c,n)-GAPS.csv' where Name is one of ALE, HL, or HL0 appropriately. Parameters are omitted where not
+        relevant to the model, e.g. a Hastings-Levtiov-0 cluster would be saved as 'HL0(sigma,c, n)-GAPS.csv.'
+
         Raises
         ------
         AttributeError
@@ -355,7 +406,7 @@ class LaplacianModel:
 
         """
         # Attribute checking
-        if self.gaps == []:
+        if len(self.gaps) == 0:
             raise AttributeError('Generation gaps have not been computed for this model')
         with open(self.name + '-GAPS.csv', 'w') as file:
             gap_writer = writer(file, delimiter=',', quotechar='"')
@@ -381,7 +432,7 @@ class LaplacianModel:
 
         """
         # Attribute checking
-        if self.thetas == [] or self.caps == []:
+        if len(self.thetas) == 0 or len(self.caps) == 0:
             raise AttributeError('Angles or capacities (or both) have not been generated for this model')
         self.gaps = gaps(self.thetas, self.caps)
         if save:
@@ -399,7 +450,7 @@ class LaplacianModel:
 
         """
         # Attribute checking
-        if self.thetas == [] or self.caps == []:
+        if len(self.thetas) == 0 or len(self.caps) == 0:
             raise AttributeError('Angles or capacities (or both) have not been generated for this model')
         with open(self.name + '-ANGLES.csv', 'w') as file:
             angle_writer = writer(file, delimiter=',', quotechar='"')
@@ -428,9 +479,22 @@ class ALE(LaplacianModel):
         self.name = 'ALE(' + str(alpha) + ',' + str(eta) + ',' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
 
     def __pdf(self, theta: float) -> float:
+        """Returns the un-normalised value of the pdf of the angle distribution at the angle `theta`.
+
+        Parameters
+        ----------
+        theta : float
+            The point at which to evaluate the pdf.
+
+        Returns
+        -------
+        float
+            The value of the pdf of the angle distribution at the point `theta`.
+
+        """
         return abs(map_diff(cmath.exp(self.sigma + theta * 1j), self.caps, self.thetas)) ** -self.eta
 
-    def sample(self) -> float:
+    def __sample(self) -> float:
         """Samples an angle from the angle distribution using Simpson's rule.
 
         Samples an angle from the distribution with pdf proportional to the absolute value of the derivative of the
@@ -441,12 +505,31 @@ class ALE(LaplacianModel):
         -------
         float
             An angle in the interval [-pi,pi] randomly sampled from the requisite distribution.
+
         """
         bins = linspace(-pi, pi, self.bins)
-        simpsons = [((bins[i+1]-bins[i])/6)*(self.__pdf(bins[i]) + 4 * self.__pdf((bins[i+1]-bins[i])/2) +
-                                             self.__pdf(bins[i+1])) for i in range(len(bins)-1)]
-        bins = [(bins[i+1]-bins[i])/2 for i in range(len(bins)-1)]
+        simpsons = [((bins[i + 1] - bins[i]) / 6) * (self.__pdf(bins[i]) + 4 * self.__pdf((bins[i + 1] - bins[i]) / 2) +
+                                                     self.__pdf(bins[i + 1])) for i in range(len(bins) - 1)]
+        bins = [(bins[i + 1] - bins[i]) / 2 for i in range(len(bins) - 1)]
         return random.choices(bins, simpsons, k=1)[0]
+
+    def generate_angles_and_capacities(self) -> None:
+        """Generates the angles and capacities for this model.
+
+        Generates the sequences of angles and capacities defined by the ALE model with the given parameters sigma,
+        alpha, and eta which are stored in self.thetas and self.caps respectively. This is done by iteratively sampling
+        a new angle from the distribution defined by the derivative of the map raised to the power -eta and then
+        computing the next capacity by evaluating the derivative of the map at the newly sampled angle (regularised by
+        sigma).
+
+        """
+        self.thetas.append(random.random() * 2 * pi - pi)
+        self.caps.append(self.c)
+        for _ in range(self.n - 1):
+            new_angle = self.__sample()
+            diff = abs(map_diff(cmath.exp(self.sigma + new_angle * 1j), self.caps, self.thetas))
+            self.caps.append(self.c * (diff ** -self.alpha))
+            self.thetas.append(new_angle)
 
 
 class HL(LaplacianModel):
@@ -468,6 +551,7 @@ class HL(LaplacianModel):
         Generates the sequence of logarithmic capacities using the derivative of the slit map. Each derivative is
         computed at the point of attachment of the next slit.
         """
+        self.caps.append(self.c)
         for i in range(self.n - 1):
             self.caps.append(self.c * abs(map_diff(cmath.exp(1j * self.thetas[i + i] + self.sigma), self.caps,
                                                    self.thetas[:i + 1])) ** (-self.alpha))
