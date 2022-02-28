@@ -28,6 +28,8 @@ from typing import List
 from csv import writer
 from pickle import dump, HIGHEST_PROTOCOL
 
+plt.ioff()
+
 
 def __slit_map(c: float, z: complex) -> complex:
     """Draws a slit with capacity `c` at the point 1.
@@ -103,7 +105,7 @@ def full_map(caps: List[float], z: complex, thetas: List[float]) -> complex:
     return z
 
 
-def __slit_diff(c: float, z: complex):
+def __slit_diff(c: float, z: complex) -> complex:
     """Computes the derivative of the slit map with capacity `c` at the point `z`.
 
     Calculates the derivative of the slit map with logarithmic capacity `c` at a point in the complex plane `z` via the
@@ -118,7 +120,7 @@ def __slit_diff(c: float, z: complex):
 
     Returns
     -------
-    float
+    complex
         The derivative of the slit map with capacity `c` at the point `z`.
 
     """
@@ -130,7 +132,7 @@ def __slit_diff(c: float, z: complex):
     return prod1 + prod2
 
 
-def map_diff(z: complex, caps: List[float], thetas: List[float]) -> float:
+def map_diff(z: complex, caps: List[float], thetas: List[float]) -> complex:
     """Computes the derivative of the full map characterised by `caps` and `thetas` at the point `z`.
 
     Calculates the derivative of the full map characterised by `caps` and `thetas` at the point `z` using the chain
@@ -148,7 +150,7 @@ def map_diff(z: complex, caps: List[float], thetas: List[float]) -> float:
 
     Returns
     --------
-    diff : float
+    diff : complex
         The value of the derivative of the map characterised by `caps` and `thetas` at the point e^(i*`theta` +
         `sigma`).
     """
@@ -300,13 +302,18 @@ class LaplacianModel:
         self.gaps = []
         self.name = None  # Overwritten by subclasses
 
-    def plot(self) -> None:
+    def plot(self, display: bool = False) -> None:
         """Plots an image of the cluster given by generated angles and capacities.
 
         Plots the cluster given by previously generated angles and capacities by plotting the image of self.points
         equally spaced points around a circle using pyplot and saves the image as 'Name(alpha,eta,sigma,c,n).png' where
         Name is one of ALE, HL, or HL0 appropriately. Parameters are omitted where not relevant to the model, e.g. a
         Hastings-Levtiov-0 cluster would be saved as 'HL0(sigma,c,n).png'.
+
+        Parameters
+        ----------
+        display : bool, default: False
+            Whether to display the plot to the user as well as saving.
 
         Raises
         ------
@@ -328,9 +335,11 @@ class LaplacianModel:
         ax.set_aspect('equal')
         ax.axes.xaxis.set_visible(False)
         ax.axes.yaxis.set_visible(False)
+        if display:
+            plt.show()
         plt.savefig(self.name + '.png')
 
-    def plot_colour(self) -> None:
+    def plot_colour(self, display: bool = False) -> None:
         """Plots an image of the cluster given by generated angles and capacities, with slit generation marked by
         colour.
 
@@ -339,6 +348,11 @@ class LaplacianModel:
         slits are plotted in red with later slits moving through green to blue. The image is saved as 'Name(alpha,
         eta,sigma,c,n)-COLOUR.png' where Name is one of ALE, HL, or HL0 appropriately. Parameters are omitted where
         not relevant to the model, e.g. a Hastings-Levtiov-0 cluster would be saved as 'HL0(sigma,c,n)-COLOUR.png'.
+
+        Parameters
+        ----------
+        display : bool, default: False
+            Whether to display the plot to the user as well as saving.
 
         Raises
         ------
@@ -371,15 +385,22 @@ class LaplacianModel:
         ax.set_aspect('equal')
         ax.axes.xaxis.set_visible(False)
         ax.axes.yaxis.set_visible(False)
+        if display:
+            plt.show()
         plt.savefig(self.name + '-COLOUR.png')
 
-    def plot_gaps(self) -> None:
+    def plot_gaps(self, display: bool = False) -> None:
         """Plots the generation gaps as a histogram.
 
         Plots the generation gaps produced by compute_gaps() as a pyplot histogram. The resulting image is saved as
         'Name(alpha,eta,sigma,c,n)-GAPS.png' where Name is one of ALE, HL, or HL0 appropriately. Parameters are
         omitted where not relevant to the model, e.g. a Hastings-Levtiov-0 cluster would be saved as 'HL0(sigma,c,
         n)-GAPS.png.'
+
+        Parameters
+        ----------
+        display : bool, default: False
+            Whether to display the plot to the user as well as saving.
 
         Raises
         ------
@@ -390,6 +411,8 @@ class LaplacianModel:
             raise AttributeError('Generation gaps have not been computed for this model')
         plt.cla()
         plt.hist(self.gaps)
+        if display:
+            plt.show()
         plt.savefig(self.name + '-GAPS.png')
 
     def save_gaps(self) -> None:
@@ -472,7 +495,7 @@ class ALE(LaplacianModel):
 
     def __init__(self, alpha: float, eta: float, sigma: float, c: float, n: int, points: int = 10 ** 6,
                  reg: float = 1.000001, bins: int = 10 ** 5) -> None:
-        super().__init__(sigma, c, n, points, reg)
+        super(ALE,self).__init__(sigma, c, n, points, reg)
         self.alpha = alpha
         self.eta = eta
         self.bins = bins
@@ -508,7 +531,7 @@ class ALE(LaplacianModel):
 
         """
         bins = linspace(-pi, pi, self.bins)
-        simpsons = [((bins[i + 1] - bins[i]) / 6) * (self.__pdf(bins[i]) + 4 * self.__pdf((bins[i + 1] - bins[i]) / 2) +
+        simpsons = [((bins[i + 1] - bins[i]) / 6) * (self.__pdf(bins[i]) + 4 * self.__pdf((bins[i + 1] + bins[i]) / 2) +
                                                      self.__pdf(bins[i + 1])) for i in range(len(bins) - 1)]
         bins = [(bins[i + 1] - bins[i]) / 2 for i in range(len(bins) - 1)]
         return random.choices(bins, simpsons, k=1)[0]
@@ -540,7 +563,7 @@ class HL(LaplacianModel):
     def __init__(self, alpha: float, sigma: float, c: float, n: int, points: int = 10 ** 6,
                  reg: float = 1.000001) \
             -> None:
-        super().__init__(sigma, c, n, points, reg)
+        super(HL,self).__init__(sigma, c, n, points, reg)
         self.alpha = alpha
         self.name = 'HL(' + str(alpha) + ',' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
         self.thetas = [random.random() * 2 * pi for _ in range(n)]
@@ -553,7 +576,7 @@ class HL(LaplacianModel):
         """
         self.caps.append(self.c)
         for i in range(self.n - 1):
-            self.caps.append(self.c * abs(map_diff(cmath.exp(1j * self.thetas[i + i] + self.sigma), self.caps,
+            self.caps.append(self.c * abs(map_diff(cmath.exp(1j * self.thetas[i + 1] + self.sigma), self.caps,
                                                    self.thetas[:i + 1])) ** (-self.alpha))
 
 
@@ -563,7 +586,7 @@ class HL0(LaplacianModel):
     """
 
     def __init__(self, sigma: float, c: float, n: int, points: int = 10 ** 6, reg: float = 1.000001) -> None:
-        super().__init__(sigma, c, n, points, reg)
+        super(HL0,self).__init__(sigma, c, n, points, reg)
         self.name = 'HL0(' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
         self.caps = [c for _ in range(n)]
         self.thetas = [random.random() * 2 * pi - pi for _ in range(n)]
