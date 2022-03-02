@@ -23,14 +23,18 @@ double _Complex full_map(double caps[], double _Complex z_0, double thetas[], in
 	return z;
 }
 
-void full_map_py(double caps[], double *z_real, double *z_imag, double thetas[], int len)
+void full_map_py(double caps[], double z_real[], double z_imag[], double thetas[], int len_thetas, int len)
 {
-	double real = *z_real;
-	double imag = *z_imag;
-	double _Complex z = real + imag*I;
-	double _Complex result = full_map(caps,z,thetas,len);
-	*z_real = creal(result);
-	*z_imag = cimag(result);
+	int i;
+	for(i=0;i<len;i=i+1)
+	{
+		double real = z_real[i];
+		double imag = z_imag[i];
+		double _Complex z = real + imag*I;
+		double _Complex result = full_map(caps,z,thetas,len_thetas);
+		z_real[i] = creal(result);
+		z_imag[i] = cimag(result);
+	}
 }
 
 double _Complex slit_diff(double c, double _Complex z)
@@ -117,9 +121,13 @@ double pdf(double theta, double sigma, double caps[], double thetas[], double et
 	return pow(cabs(map_diff(cexp(sigma+theta*I),caps,thetas,len)),-eta);	
 }
 
-double simpson(double theta1, double theta2, double sigma, double caps[], double thetas[], double eta, int len)
+void simpson(double vals[], double angles[], double sigma, double caps[], double thetas[], double eta, int len_thetas, int len)
 {
-	return ((theta2-theta1)/6)*(pdf(theta1,sigma,caps,thetas,eta,len) + pdf(theta2,sigma,caps,thetas,eta,len) + 4*pdf((theta2+theta1)/2,sigma,caps,thetas,eta,len));	
+	int i;
+	for(i=0;i<len-1;i=i+1)
+	{
+		vals[i] = ((angles[i+1]-angles[i])/6)*(pdf(angles[i],sigma,caps,thetas,eta,len_thetas) + pdf(angles[i+1],sigma,caps,thetas,eta,len_thetas) + 4*pdf((angles[i]+angles[i+1])/2,sigma,caps,thetas,eta,len_thetas));	
+	}
 }
 
 double new_cap(double c, double alpha, double sigma, double angle, double caps[], double thetas[], int len)
