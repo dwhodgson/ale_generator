@@ -14,9 +14,15 @@
    .. autosummary::
    	:toctree:
    
+      beta
+      building_block
       full_map
       gaps
+      generation
+      length
       map_diff
+      slit_diff
+      slit_map
    
    
 
