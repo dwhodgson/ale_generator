@@ -124,7 +124,7 @@ double pdf(double theta, double sigma, double caps[], double thetas[], double et
 void simpson(double vals[], double angles[], double sigma, double caps[], double thetas[], double eta, int len_thetas, int len)
 {
 	int i;
-	for(i=0;i<len-1;i=i+1)
+	for(i=0;i<len;i=i+1)
 	{
 		vals[i] = ((angles[i+1]-angles[i])/6)*(pdf(angles[i],sigma,caps,thetas,eta,len_thetas) + pdf(angles[i+1],sigma,caps,thetas,eta,len_thetas) + 4*pdf((angles[i]+angles[i+1])/2,sigma,caps,thetas,eta,len_thetas));	
 	}
