@@ -32,6 +32,8 @@ from pickle import dump, HIGHEST_PROTOCOL
 
 matplotlib.use('Agg')
 plt.ioff()
+# Uncomment for reproducibility
+random.seed(72)
 
 # C Functions
 ale_funcs = ctypes.CDLL('./ale_funcs.so')
@@ -249,9 +251,9 @@ def generation(m: int, theta: float, caps: List[float], angles: List[float]) -> 
         if angle - b <= theta <= angle + b:
             return n
         # Check in case of wrap-around
-        if angle - b < -pi and theta >= angle - b + pi:
+        if angle - b < -pi and theta >= angle - b + 2*pi:
             return n
-        if angle + b > pi and theta <= angle + b - pi:
+        if angle + b > pi and theta <= angle + b - 2*pi:
             return n
         theta = cmath.phase(building_block(c, cmath.exp(theta * 1j), angle))
 
@@ -479,7 +481,7 @@ class LaplacianModel:
         # Attribute checking
         if len(self.thetas) == 0 or len(self.caps) == 0:
             raise AttributeError('Angles or capacities (or both) have not been generated for this model')
-        self.gaps = gaps(self.thetas, self.caps)
+        self.gaps = gaps(self.caps, self.thetas)
         if save:
             self.save_gaps()
         if plot:
@@ -562,7 +564,8 @@ class ALE(LaplacianModel):
         theta_list = DoubleArray(*self.thetas)
         cap_list = DoubleArray(*self.caps)
         simpson(simpsons, bins, self.sigma, cap_list, theta_list, self.eta, len(self.thetas), self.bins)
-        bins = [(bins[i + 1] - bins[i]) / 2 for i in range(self.bins)]
+        #simpsons = [((bins[i+1]-bins[i])/6)*(self.pdf(bins[i])+self.pdf(bins[i+1]) + 4*self.pdf((bins[i]+bins[i+1])/2)) for i in range(self.bins)]
+        bins = [(bins[i + 1] + bins[i]) / 2 for i in range(self.bins)]
         total = sum(simpsons)
         rand = random.random() * total
         target = 0

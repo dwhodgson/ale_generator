@@ -104,11 +104,11 @@ int generation(int m, double theta, double caps[], double angles[])
 		{
 			return n;
 		}
-		else if(angle -b < -M_PI && theta >= angle-b+M_PI)
+		else if(angle -b < -M_PI && theta >= angle-b+2*M_PI)
 		{
 			return n;
 		}
-		else if(angle+b > M_PI && theta <= angle+b-M_PI)
+		else if(angle+b > M_PI && theta <= angle+b-2*M_PI)
 		{
 			return n;
 		}
