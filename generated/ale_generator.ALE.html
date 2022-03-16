@@ -36,7 +36,43 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="ale_generator.ALE">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ale_generator.</span></span><span class="sig-name descname"><span class="pre">ALE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.000001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ale_generator.ALE" title="Permalink to this definition">¶</a></dt>
-<dd><p>TODO DOCSTRING</p>
+<dd><p>A class implementing the Aggregated Loewner Evolution model of random growth.</p>
+<p>This class implements the most complex of the three contained in this module: Aggregated Loewner Evolution. This
+model is parameterised by two main parameters: <cite>alpha</cite>, which controls how the logarithmic capacities evolve, and
+<cite>eta</cite>, which controls the distribution from which attachment angles are chosen. Hastings-Levitov is equivalent to
+this model with <a href="#id1"><span class="problematic" id="id2">`</span></a>eta`=0 and HL0 is equivalent to this model with <a href="#id3"><span class="problematic" id="id4">`</span></a>eta`=`alpha`=0. See <a class="reference internal" href="#rb5c84628fe7e-1" id="id5">[1]</a> for mathematical
+explanation and justification of this model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>alpha</strong><span class="classifier">float</span></dt><dd><p>The parameter characterising the evolution of the logarithmic capacities.</p>
+</dd>
+<dt><strong>eta</strong><span class="classifier">float</span></dt><dd><p>The parameter characterising the evolution of the attachment angle distribution.</p>
+</dd>
+<dt><strong>sigma</strong><span class="classifier">float</span></dt><dd><p>Regularisation parameter. Maps and their derivatives will be applied to e^(i*theta + <cite>sigma</cite>).</p>
+</dd>
+<dt><strong>c</strong><span class="classifier">float</span></dt><dd><p>The initial logarithmic capacity of the model.</p>
+</dd>
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>The number of iterations to be performed.</p>
+</dd>
+<dt><strong>points</strong><span class="classifier">int, default: 10^6</span></dt><dd><p>The number of points to be used for plotting clusters</p>
+</dd>
+<dt><strong>reg</strong><span class="classifier">float, default: 1.000001</span></dt><dd><p>Regularisation of the circle for plotting clusters - should be strictly greater than 1.</p>
+</dd>
+<dt><strong>bins</strong><span class="classifier">int, default: 10^5</span></dt><dd><p>The number of bins to be used when sampling from the angle distribution using Simpson’s rule.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="rb5c84628fe7e-1"><span class="brackets"><a class="fn-backref" href="#id5">1</a></span></dt>
+<dd><ol class="upperalpha simple">
+<li><p>Sola, A. Turner, F. Viklund, “One-Dimensional Scaling Limits in a Planar Laplacian Random Growth Model”,</p></li>
+</ol>
+</dd>
+</dl>
+<p>Communications in Mathematical Physics, vol. 371, pp. 285-329, 2019.</p>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
