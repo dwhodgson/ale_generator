@@ -21,6 +21,7 @@
       generation
       length
       map_diff
+      plot
       slit_diff
       slit_map
    
