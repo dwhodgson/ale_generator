@@ -35,8 +35,25 @@
 <h1>ale_generator.HL0<a class="headerlink" href="#ale-generator-hl0" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ale_generator.HL0">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ale_generator.</span></span><span class="sig-name descname"><span class="pre">HL0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.000001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ale_generator.HL0" title="Permalink to this definition">¶</a></dt>
-<dd><p>TODO DOCSTRING</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ale_generator.</span></span><span class="sig-name descname"><span class="pre">HL0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.000001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ale_generator.HL0" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class implementing the Hastings-Levitov-0 model of random growth</p>
+<p>This is the simplest model implemented in this module. Since both parameters <cite>alpha</cite> and <cite>eta</cite> are zero, the
+sequence of capacities are constant and the attachment angles are drawn uniformly from the interval [-pi,pi]. This
+model is equivalent to ALE with <a href="#id1"><span class="problematic" id="id2">`</span></a>eta`=`alpha`=0 and Hastings-Levitov with <a href="#id3"><span class="problematic" id="id4">`</span></a>alpha`=0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>c</strong><span class="classifier">float</span></dt><dd><p>The initial logarithmic capacity of the model.</p>
+</dd>
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>The number of iterations to be performed.</p>
+</dd>
+<dt><strong>points</strong><span class="classifier">int, default: 10^6</span></dt><dd><p>The number of points to be used for plotting clusters</p>
+</dd>
+<dt><strong>reg</strong><span class="classifier">float, default: 1.000001</span></dt><dd><p>Regularisation of the circle for plotting clusters - should be strictly greater than 1.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
