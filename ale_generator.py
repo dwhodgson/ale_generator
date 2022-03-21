@@ -33,7 +33,7 @@ from pickle import dump, HIGHEST_PROTOCOL
 matplotlib.use('Agg')
 plt.ioff()
 # Uncomment for reproducibility
-random.seed(72)
+#random.seed(72)
 
 # C Functions
 ale_funcs = ctypes.CDLL('./ale_funcs.so')
@@ -255,7 +255,7 @@ def generation(m: int, theta: float, caps: List[float], angles: List[float]) -> 
             return n
         if angle + b > pi and theta <= angle + b - 2 * pi:
             return n
-        theta = cmath.phase(building_block(c, cmath.exp(theta * 1j + 0.00000000001), angle))
+        theta = cmath.phase(building_block(c, cmath.exp(theta * 1j + 10**-15), angle))
 
 
 def gaps(caps: List[float], thetas: List[float]) -> List[int]:
@@ -337,8 +337,6 @@ class LaplacianModel:
 
     Parameters
     -----------
-    sigma : float
-        Regularisation parameter. Maps and their derivatives will be applied to e^(i*theta + `sigma`).
     c : float
         The initial logarithmic capacity of the model.
     n : int
@@ -350,8 +348,7 @@ class LaplacianModel:
 
     """
 
-    def __init__(self, sigma: float, c: float, n: int, points: int = 10 ** 6, reg: float = 1.000001) -> None:
-        self.sigma = sigma
+    def __init__(self, c: float, n: int, points: int = 10 ** 6, reg: float = 1.000001) -> None:
         self.c = c
         self.n = n
         self.points = points
@@ -577,9 +574,10 @@ class ALE(LaplacianModel):
 
     def __init__(self, alpha: float, eta: float, sigma: float, c: float, n: int, points: int = 10 ** 6,
                  reg: float = 1.000001, bins: int = 10 ** 5) -> None:
-        super(ALE, self).__init__(sigma, c, n, points, reg)
+        super(ALE, self).__init__(c, n, points, reg)
         self.alpha = alpha
         self.eta = eta
+        self.sigma = sigma
         self.bins = bins
         self.name = 'ALE(' + str(alpha) + ',' + str(eta) + ',' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
 
@@ -622,7 +620,6 @@ class ALE(LaplacianModel):
         theta_list = DoubleArray(*self.thetas)
         cap_list = DoubleArray(*self.caps)
         simpson(simpsons, bins, self.sigma, cap_list, theta_list, self.eta, len(self.thetas), self.bins)
-        # simpsons = [((bins[i+1]-bins[i])/6)*(self.pdf(bins[i])+self.pdf(bins[i+1]) + 4*self.pdf((bins[i]+bins[i+1])/2)) for i in range(self.bins)]
         bins = [(bins[i + 1] + bins[i]) / 2 for i in range(self.bins)]
         total = sum(simpsons)
         rand = random.random() * total
@@ -652,14 +649,39 @@ class ALE(LaplacianModel):
 
 
 class HL(LaplacianModel):
-    """
-    TODO DOCSTRING
+    """A class implementing the Hastings-Levitov model of random growth.
+
+    This class implements the Hastings-Levitov model of random growth. This model is parameterised by the parameter
+    `alpha`, which controls how the logarithmic capacities evolve, and is equivalent to the ALE with `eta`=0. HL0 is
+    equivalent to this model with `alpha`=0. See [2]_ for mathematical explanation and justification of this model.
+
+    Parameters
+    ----------
+    alpha : float
+        The parameter characterising the evolution of the logarithmic capacities.
+    sigma : float
+        Regularisation parameter. Maps and their derivatives will be applied to e^(i*theta + `sigma`).
+    c : float
+        The initial logarithmic capacity of the model.
+    n : int
+        The number of iterations to be performed.
+    points : int, default: 10^6
+        The number of points to be used for plotting clusters
+    reg : float, default: 1.000001
+        Regularisation of the circle for plotting clusters - should be strictly greater than 1.
+
+    References
+    ----------
+    .. [2] MB. Hastings, LS. Levitov, "Laplacian Growth as One-Dimensional Turbulence", Physica D, vol. 116, pp. 244-252,
+    1998.
+
     """
 
     def __init__(self, alpha: float, sigma: float, c: float, n: int, points: int = 10 ** 6,
                  reg: float = 1.000001) \
             -> None:
-        super(HL, self).__init__(sigma, c, n, points, reg)
+        super(HL, self).__init__(c, n, points, reg)
+        self.sigma = sigma
         self.alpha = alpha
         self.name = 'HL(' + str(alpha) + ',' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
         self.thetas = [random.random() * 2 * pi for _ in range(n)]
@@ -677,12 +699,27 @@ class HL(LaplacianModel):
 
 
 class HL0(LaplacianModel):
-    """
-    TODO DOCSTRING
+    """A class implementing the Hastings-Levitov-0 model of random growth
+
+    This is the simplest model implemented in this module. Since both parameters `alpha` and `eta` are zero, the
+    sequence of capacities are constant and the attachment angles are drawn uniformly from the interval [-pi,pi]. This
+    model is equivalent to ALE with `eta`=`alpha`=0 and Hastings-Levitov with `alpha`=0.
+
+    Parameters
+    ----------
+    c : float
+        The initial logarithmic capacity of the model.
+    n : int
+        The number of iterations to be performed.
+    points : int, default: 10^6
+        The number of points to be used for plotting clusters
+    reg : float, default: 1.000001
+        Regularisation of the circle for plotting clusters - should be strictly greater than 1.
+
     """
 
-    def __init__(self, sigma: float, c: float, n: int, points: int = 10 ** 6, reg: float = 1.000001) -> None:
-        super(HL0, self).__init__(sigma, c, n, points, reg)
-        self.name = 'HL0(' + str(sigma) + ',' + str(c) + ',' + str(n) + ')'
+    def __init__(self, c: float, n: int, points: int = 10 ** 6, reg: float = 1.000001) -> None:
+        super(HL0, self).__init__(c, n, points, reg)
+        self.name = 'HL0('  + str(c) + ',' + str(n) + ')'
         self.caps = [c for _ in range(n)]
         self.thetas = [random.random() * 2 * pi - pi for _ in range(n)]
