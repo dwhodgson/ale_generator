@@ -536,7 +536,7 @@ class LaplacianModel:
             gap_writer = writer(file, delimiter=',', quotechar='"')
             gap_writer.writerow(self.gaps)
 
-    def compute_gaps(self, save: bool = True, plot: bool = True) -> None:
+    def compute_gaps(self, save: bool = False, plot: bool = False) -> None:
         """Computes the time series of generation gaps for the cluster given by generated angles and capacities.
 
         Computes the generation gaps, that is the difference between the generation of each particle and the generation
@@ -544,9 +544,9 @@ class LaplacianModel:
 
         Parameters
         ----------
-        save : bool, default: True
+        save : bool, default: False
             Whether to save the computed gaps as a csv file.
-        plot : bool, default: True
+        plot : bool, default: False
             Whether to plot the gaps as a histogram.
 
         Raises

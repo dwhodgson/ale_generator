@@ -4,7 +4,7 @@
 
 double _Complex slit_map(double c, double _Complex z)
 {
-	return (exp(c)/(2*z)) * (cpow(z,2) + 2*z*(1-exp(-c)) + 1 + cpow(z+1,2)*csqrt((cpow(z,2) + 2*z*(1-2*exp(-c))+1)/cpow(z+1,2)));
+	return (exp(c)/(2*z))*(cpow(z,2)+2*z*(1-exp(-c))+1+cpow((z+1),2)*csqrt((cpow(z,2)+2*z*(1-2*exp(-c))+1)/(cpow(z+1,2))));
 }
 
 double _Complex building_block(double c, double _Complex z, double theta)
@@ -45,16 +45,6 @@ double _Complex slit_diff(double c, double _Complex z)
 	return prod1 + prod2;
 }
 
-void slit_diff_py(double c, double *z_real, double *z_imag)
-{
-	double real = *z_real;
-	double imag = *z_imag;
-	double _Complex z = real + imag*I;
-	double _Complex result = slit_diff(c,z);
-	*z_real = creal(result);
-	*z_imag = cimag(result);
-}
-
 double _Complex map_diff(double _Complex z_0, double caps[], double thetas[], int len)
 {
 	double _Complex diff = 1;
@@ -68,14 +58,11 @@ double _Complex map_diff(double _Complex z_0, double caps[], double thetas[], in
 	return diff;
 }
 
-void map_diff_py(double *z_real, double *z_imag, double caps[], double thetas[], int len)
+double map_diff_py(double z_real, double z_imag, double caps[], double thetas[], int len)
 {
-	double real = *z_real;
-	double imag = *z_imag;
-	double _Complex z = real + imag*I;
+	double _Complex z = z_real + z_imag*I;
 	double _Complex result = map_diff(z,caps,thetas,len);
-	*z_real = creal(result);
-	*z_imag = cimag(result);
+	return cabs(result);
 }
 
 double length(double c)
@@ -88,10 +75,29 @@ double beta(double c)
 	return 2*atan(length(c)/(2*sqrt(length(c)+1)));	
 }
 
-int generation(int m, double theta, double caps[], double angles[])
+double angle_map(double c, double angle)
 {
-	int n;
-	for(n=m;n>=0;n=n-1)
+	angle = tan(angle/2);
+	double d = length(c);
+	d = d/(d+2);
+	angle = angle*sqrt(1-pow(d,2));
+	if(angle<-d)
+	{
+		return 2*atan(-sqrt(pow(angle,2)-pow(d,2)));	
+	}
+	else if(angle>d)
+	{
+		return 2*atan(sqrt(pow(angle,2)-pow(d,2)));	
+	}
+	else
+	{
+		return 0;
+	}
+}
+					  
+int generation(int m, double theta, double *caps, double *angles)
+{
+	for(int n=m;n>=0;n--)
 	{
 		if(n==0)
 		{
@@ -100,19 +106,36 @@ int generation(int m, double theta, double caps[], double angles[])
 		double angle = angles[n-1];
 		double c = caps[n-1];
 		double b = beta(c);
-		if(angle-b<=theta && theta<=angle+b)
+		if(angle-b <= theta && theta <= angle+b)
 		{
 			return n;
 		}
-		else if(angle -b < -M_PI && theta >= angle-b+2*M_PI)
+		//Check in case of wrap-around
+		if(angle-b < -M_PI && theta >= angle-b+(2*M_PI))
 		{
 			return n;
 		}
-		else if(angle+b > M_PI && theta <= angle+b-2*M_PI)
+		if(angle+b > M_PI && theta <= angle+b-2*(M_PI))
 		{
 			return n;
 		}
-		theta = carg(building_block(c,cexp(theta*I),angle));
+		theta = angle_map(c,theta-angle)+angle;
+		while(theta>M_PI)
+		{
+			theta = theta-(2*M_PI);
+		}
+		while(theta<-M_PI)
+		{
+			theta = theta+2*(M_PI);
+		}
+	}
+}
+		
+void gaps(int gaps[], double caps[], double thetas[], int len)
+{
+	for(int i=0;i<len;i++)
+	{
+		gaps[i] = (i+1)-generation(i,thetas[i],caps,thetas);
 	}
 }
 
@@ -127,24 +150,5 @@ void simpson(double vals[], double angles[], double sigma, double caps[], double
 	for(i=0;i<len;i=i+1)
 	{
 		vals[i] = ((angles[i+1]-angles[i])/6)*(pdf(angles[i],sigma,caps,thetas,eta,len_thetas) + pdf(angles[i+1],sigma,caps,thetas,eta,len_thetas) + 4*pdf((angles[i]+angles[i+1])/2,sigma,caps,thetas,eta,len_thetas));	
-	}
-}
-
-double new_cap(double c, double alpha, double sigma, double angle, double caps[], double thetas[], int len)
-{
-	return c*pow(cabs(map_diff(cexp(sigma+angle*I),caps,thetas,len)),-alpha);	
-}
-
-double choice(double choices[], double weights[], double total, double rand, int len)
-{
-	double num = 0;
-	int i;
-	for(i=0;i<len;i=i+1)
-	{
-		num = num + weights[i];
-		if(rand < num)
-		{
-			return choices[i];
-		}
 	}
 }
