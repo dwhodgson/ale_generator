@@ -25,12 +25,6 @@ mh_burn = args.mhburn
 mh_loops = args.mhloops
 rm_loops = args.rmloops
 
-n = 10
-beta = 1
-mh_burn = 100
-mh_loops = 100
-rm_loops = 250
-
 energies = [E1-i*delta for i in range(width)]
 midpoints = [(E+E-delta)/2 for E in energies]
 
@@ -76,26 +70,16 @@ def MH(a,E1,E2,start_angles,start_act,loops,burn,n,m):
     act = start_act
     total = 0
     result_list = []
-#    out_count = 0
-#    accepts = 0
     for i in range(burn+loops):
         noise = rng.uniform(-np.pi,np.pi,size=n)
-        #noise = rng.normal(0,np.pi*jump,size=n)*jump
         idx = rng.integers(low=0, high=n, size=n)
-        #idx = range(n)
         for j in range(n):
-            new_angles = angles.copy()
-            new_angles[idx[j]] = wrap_add(new_angles[idx[j]],noise[j])
-            new_act = action(new_angles,m)
-            # chng = change(angles,noise[j],idx[j],m)
-            # new_act = act + chng
-            if(E1<=new_act<=E2 and np.log(rng.random()) < a * (new_act-act)):
+            chng = change(angles,noise[j],idx[j],m)
+            new_act = act + chng
+            if(E1<=new_act<=E2 and np.log(rng.random()) < a * (chng)):
                 #angles = new_angles.copy()
                 angles[idx[j]] = wrap_add(angles[idx[j]],noise[j])
                 act = new_act
-#                accepts = accepts+1
-#            elif (new_act<E1 or E2<new_act):
-#                out_count = out_count+1
         if(i>=burn):
             d = (act-(E1+E2)/2)
             total = total + d
@@ -129,17 +113,8 @@ results = []
 m = action_init(np.zeros(n))
 for E in tqdm(energies):
     results.append(RM(E,delta,rm_loops,mh_loops,mh_burn,n,m))
-plot_midpoints = []
-plot_results = []
-for i in range(len(results)):
-    if results[i]!=0:
-        plot_midpoints.append(midpoints[i])
-        plot_results.append(results[i])
-plt.cla()
-plt.plot(plot_midpoints,plot_results)
-plt.savefig('XYNN_check.png')
-# filename = f'FullRuns/XYNN_n{n}_d{delta}_{E1}.csv'
-# with open(filename,'w',newline='\n') as csvfile:
-#     csvwriter = writer(csvfile)
-#     csvwriter.writerows(results)
-#     csvwriter.writerow(midpoints)
+filename = f'FullRuns/XYNN_n{n}_d{delta}_{E1}.csv'
+with open(filename,'w',newline='\n') as csvfile:
+    csvwriter = writer(csvfile)
+    csvwriter.writerows(results)
+    csvwriter.writerow(midpoints)
