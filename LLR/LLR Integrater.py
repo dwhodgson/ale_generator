@@ -82,14 +82,7 @@ def action_init(angles,beta):
         for j in range(i):
             total = total + np.cos(angles[i]-angles[j])/((i-j)**beta)
     return total
-
 n = 100
-# m1_1 = action_init(np.zeros(n),0.1,0.01)
-# m1_2 = action_init(np.zeros(n),0.01,0.0001)
-# m2_1 = action_init(np.array([0 if i%2==0 else 0.2*np.pi for i in range(n)]),0.1,0.01)
-# m2_2 = action_init(np.array([0 if i%2==0 else 0.2*np.pi for i in range(n)]),0.01,0.0001)
-# m1 = m1_1-(m1_1+m2_1)/2
-# m2 = m1_2-(m1_2+m2_2)/2
 m1 = action_init(np.zeros(n),1)
 #m2 = action_init(np.zeros(n),2)
 #m3 = action_init(np.zeros(n),3)
